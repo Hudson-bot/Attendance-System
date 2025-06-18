@@ -68,7 +68,7 @@ const StudentDashboard = () => {
     setIsUpdating(true);
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/attendance/my-attendance",
+        "https://attendance-system-app-bzly.onrender.com/api/attendance/my-attendance",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -107,7 +107,7 @@ const StudentDashboard = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        'http://localhost:5000/api/attendance/mark',
+        'https://attendance-system-app-bzly.onrender.com/api/attendance/mark',
         { qrCode: decodedText },
         { headers: { Authorization: `Bearer ${token}` } }
       );

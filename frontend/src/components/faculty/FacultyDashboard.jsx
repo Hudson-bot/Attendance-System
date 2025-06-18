@@ -98,7 +98,7 @@ const FacultyDashboard = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/attendance/generate-qr', {
+      const response = await fetch('https://attendance-system-app-bzly.onrender.com/api/attendance/generate-qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ const FacultyDashboard = () => {
         return;
       }
       
-      const response = await fetch(`http://localhost:5000/api/attendance/session/${sessionId}`, {
+      const response = await fetch(`https://attendance-system-app-bzly.onrender.com/api/attendance/session/${sessionId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -218,7 +218,7 @@ const FacultyDashboard = () => {
       setSuccess('Preparing Excel file for download...');
       
       const xhr = new XMLHttpRequest();
-      xhr.open('GET', `http://localhost:5000/api/attendance/export/${sessionId}`, true);
+      xhr.open('GET', `https://attendance-system-app-bzly.onrender.com/api/attendance/export/${sessionId}`, true);
       xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
       xhr.responseType = 'blob';
       
@@ -261,7 +261,7 @@ const FacultyDashboard = () => {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      const response = await fetch('http://localhost:5000/api/attendance/report', {
+      const response = await fetch('https://attendance-system-app-bzly.onrender.com/api/attendance/report', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

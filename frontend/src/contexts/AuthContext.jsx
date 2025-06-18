@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Fetch user profile
-        const response = await axios.get('http://localhost:5000/api/auth/profile');
+        const response = await axios.get('https://attendance-system-app-bzly.onrender.com/api/auth/profile');
         setUser(response.data);
         showNotification('Successfully logged in', 'success');
       } catch (error) {
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setAuthLoading(true);
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post('https://attendance-system-app-bzly.onrender.com/api/auth/login', {
         email,
         password,
       });
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setAuthLoading(true);
-      const response = await axios.post('http://localhost:5000/api/auth/register', userData);
+      const response = await axios.post('https://attendance-system-app-bzly.onrender.com/api/auth/register', userData);
       const { token: newToken, user: newUser } = response.data;
       localStorage.setItem('token', newToken);
       setToken(newToken);
