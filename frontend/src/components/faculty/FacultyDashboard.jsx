@@ -139,7 +139,7 @@ const FacultyDashboard = () => {
     }
   };
 
-  const fetchSessionStudents = async (sessionId, retryCount = 0) => {
+  const fetchSessionStudents = useCallback(async (sessionId, retryCount = 0) => {
     setIsLoadingStudents(true);
     setError('');
     try {
@@ -155,7 +155,7 @@ const FacultyDashboard = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-
+  
       if (response.status === 404) {
         setError('Session not found. It may have been deleted.');
         setSessionStudents([]);
@@ -184,13 +184,13 @@ const FacultyDashboard = () => {
         setIsLoadingStudents(false);
         return;
       }
-
+  
       const data = await response.json();
       
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch session details');
       }
-
+  
       setSessionStudents(data.students || []);
       
       if (data.status === 'expired') {
@@ -210,7 +210,7 @@ const FacultyDashboard = () => {
     } finally {
       setIsLoadingStudents(false);
     }
-  };
+  }, [setIsLoadingStudents, setError, setSessionStudents, setSuccess]); // Include all state setters
 
   const downloadExcel = async (sessionId) => {
     setError('');
@@ -294,7 +294,7 @@ const FacultyDashboard = () => {
     } finally {
       setIsUpdating(false);
     }
-  }, [reports, selectedReport]);
+  }, [reports, selectedReport,isUpdating]);
 
   useEffect(() => {
     fetchReports();
@@ -313,7 +313,7 @@ const FacultyDashboard = () => {
     if (currentSession) {
       fetchSessionStudents(currentSession);
     }
-  }, [currentSession]);
+  }, [currentSession,fetchSessionStudents]);
 
   const handleCloseStudentsDialog = useCallback(() => {
     setSessionStudents([]);

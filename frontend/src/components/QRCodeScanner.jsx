@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { motion } from 'framer-motion';
 import { Box, Typography, CircularProgress, IconButton } from '@mui/material';
@@ -21,66 +21,67 @@ const QRCodeScanner = ({ onScan, onError }) => {
   const [flashOn, setFlashOn] = useState(false);
   const [scanningActive, setScanningActive] = useState(true);
 
-  useEffect(() => {
-    let mounted = true;
-    let scannerInstance = null;
+  const handleScan = useCallback((text) => {
+    if (scanningActive) {
+      onScan(text);
+      // Add haptic feedback on successful scan
+      if (navigator.vibrate) {
+        navigator.vibrate(100);
+      }
+    }
+  }, [onScan, scanningActive]);
 
-    const initScanner = async () => {
-      try {
-        // Create scanner instance
-        scannerInstance = new Html5Qrcode(qrScannerId);
-        scannerRef.current = scannerInstance;
+  const handleError = useCallback((errorMessage) => {
+    onError(errorMessage);
+    setIsLoading(false);
+  }, [onError]);
 
-        // Configuration
-        const config = {
-          fps: 2,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
-          disableFlip: false
-        };
+  const initScanner = useCallback(async () => {
+    try {
+      // Create scanner instance
+      const scannerInstance = new Html5Qrcode(qrScannerId);
+      scannerRef.current = scannerInstance;
 
-        // Start scanning
-        await scannerInstance.start(
-          { facingMode: isFrontCamera ? 'user' : 'environment' },
-          config,
-          (text) => {
-            if (mounted && scanningActive) {
-              onScan(text);
-              // Add haptic feedback on successful scan
-              if (navigator.vibrate) {
-                navigator.vibrate(100);
-              }
-            }
-          },
-          () => {} // Ignore interim errors
-        );
+      // Configuration
+      const config = {
+        fps: 2,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+        disableFlip: false
+      };
 
-        if (mounted) {
-          setIsLoading(false);
-        }
-      } catch (err) {
-        if (!mounted) return;
+      // Start scanning
+      await scannerInstance.start(
+        { facingMode: isFrontCamera ? 'user' : 'environment' },
+        config,
+        handleScan,
+        () => {} // Ignore interim errors
+      );
 
-        let errorMessage = 'Failed to start scanner. Please try again.';
-        if (err instanceof Error) {
-          if (err.message.includes('NotAllowedError')) {
-            errorMessage = 'Camera access denied. Please grant camera permissions.';
-          } else if (err.message.includes('NotFoundError')) {
-            errorMessage = 'No camera found. Please ensure your device has a camera.';
-          } else if (err.message.includes('NotReadableError')) {
-            errorMessage = 'Camera is already in use. Please close other camera apps.';
-          }
-        }
-
-        if (mounted) {
-          onError(errorMessage);
-          setIsLoading(false);
+      setIsLoading(false);
+    } catch (err) {
+      let errorMessage = 'Failed to start scanner. Please try again.';
+      if (err instanceof Error) {
+        if (err.message.includes('NotAllowedError')) {
+          errorMessage = 'Camera access denied. Please grant camera permissions.';
+        } else if (err.message.includes('NotFoundError')) {
+          errorMessage = 'No camera found. Please ensure your device has a camera.';
+        } else if (err.message.includes('NotReadableError')) {
+          errorMessage = 'Camera is already in use. Please close other camera apps.';
         }
       }
-    };
+      handleError(errorMessage);
+    }
+  }, [isFrontCamera, handleScan, handleError]);
+
+  useEffect(() => {
+    let mounted = true;
+    // let scannerInstance = null;
 
     // Add a small delay before initialization
-    const timeoutId = setTimeout(initScanner, 300);
+    const timeoutId = setTimeout(() => {
+      if (mounted) initScanner();
+    }, 300);
 
     // Cleanup function
     return () => {
@@ -88,10 +89,10 @@ const QRCodeScanner = ({ onScan, onError }) => {
       clearTimeout(timeoutId);
 
       const cleanupScanner = async () => {
-        if (scannerInstance && scannerInstance.isScanning) {
+        if (scannerRef.current?.isScanning) {
           try {
-            await scannerInstance.stop();
-            await scannerInstance.clear();
+            await scannerRef.current.stop();
+            await scannerRef.current.clear();
           } catch (err) {
             console.error('Error cleaning up scanner:', err);
           }
@@ -101,19 +102,17 @@ const QRCodeScanner = ({ onScan, onError }) => {
 
       cleanupScanner();
     };
-  }, [isFrontCamera, scanningActive]);
+  }, [initScanner]);
 
-  const toggleCamera = () => {
+  const toggleCamera = useCallback(() => {
     setScanningActive(false);
-    setIsFrontCamera(!isFrontCamera);
+    setIsFrontCamera(prev => !prev);
     setTimeout(() => setScanningActive(true), 500);
-  };
+  }, []);
 
-  const toggleFlash = () => {
-    // Note: Flash control requires additional implementation based on device capabilities
-    setFlashOn(!flashOn);
-    // In a real implementation, you would control the torch/flash here
-  };
+  const toggleFlash = useCallback(() => {
+    setFlashOn(prev => !prev);
+  }, []);
 
   return (
     <Box sx={{ 

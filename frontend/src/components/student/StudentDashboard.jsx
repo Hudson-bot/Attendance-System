@@ -114,6 +114,7 @@ const StudentDashboard = () => {
       setSuccess('Attendance marked successfully!');
       setScanning(false);
       fetchAttendanceHistory();
+      console.log(response);
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to mark attendance';
       setError(errorMessage);

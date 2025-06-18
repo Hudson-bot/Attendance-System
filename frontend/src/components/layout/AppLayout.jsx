@@ -10,7 +10,6 @@ import {
   MenuItem,
   Avatar,
   Divider,
-  useTheme
 } from '@mui/material';
 import { AccountCircle, ExitToApp } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -34,7 +33,6 @@ const AppLayout = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
